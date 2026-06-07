@@ -1,0 +1,61 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String     @id @default(uuid())
+  email     String     @unique
+  password  String
+  name      String
+  cart      CartItem[]
+  orders    Order[]
+  createdAt DateTime   @default(now())
+}
+
+model Product {
+  id          String      @id @default(uuid())
+  name        String
+  description String
+  price       Float
+  stock       Int
+  category    String
+  imageUrl    String
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+  createdAt   DateTime    @default(now())
+}
+
+model CartItem {
+  id        String  @id @default(uuid())
+  userId    String
+  productId String
+  quantity  Int
+  user      User    @relation(fields: [userId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  userId          String
+  total           Float
+  status          String      @default("pending")
+  shippingAddress Json
+  items           OrderItem[]
+  user            User        @relation(fields: [userId], references: [id])
+  createdAt       DateTime    @default(now())
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Float
+  order     Order   @relation(fields: [orderId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+}
